@@ -29,6 +29,8 @@
 #include "parameters.h"
 #include "Estimator.h"
 
+#include <ctime>
+
 #define MAXN (720000)
 #define PUBFRAME_PERIOD (20)
 
@@ -901,19 +903,19 @@ int main(int argc, char **argv)
 
     ros::Subscriber sub_imu = nh.subscribe(imu_topic, 200000, imu_cbk);
 
-    ros::Publisher pubLaserCloudFullRes = nh.advertise<sensor_msgs::PointCloud2>("/pointlio/cloud_registered", 100000);
+    ros::Publisher pubLaserCloudFullRes = nh.advertise<sensor_msgs::PointCloud2>("/cloud_registered", 100000);
 
-    ros::Publisher pubLaserCloudFullRes_body = nh.advertise<sensor_msgs::PointCloud2>("/pointlio/cloud_registered_body", 100000);
+    ros::Publisher pubLaserCloudFullRes_body = nh.advertise<sensor_msgs::PointCloud2>("/cloud_registered_body", 100000);
 
-    ros::Publisher pubLaserCloudEffect = nh.advertise<sensor_msgs::PointCloud2>("/pointlio/cloud_effected", 100000);
+    ros::Publisher pubLaserCloudEffect = nh.advertise<sensor_msgs::PointCloud2>("/cloud_effected", 100000);
 
-    ros::Publisher pubLaserCloudMap = nh.advertise<sensor_msgs::PointCloud2>("/pointlio/laser_map", 100000);
+    ros::Publisher pubLaserCloudMap = nh.advertise<sensor_msgs::PointCloud2>("/Laser_map", 100000);
 
-    ros::Publisher pubOdomAftMapped = nh.advertise<nav_msgs::Odometry>("/pointlio/odom", 100000);
+    ros::Publisher pubOdomAftMapped = nh.advertise<nav_msgs::Odometry>("/aft_mapped_to_init", 100000);
 
-    ros::Publisher pubPath = nh.advertise<nav_msgs::Path>("/pointlio/path", 100000);
+    ros::Publisher pubPath = nh.advertise<nav_msgs::Path>("/path", 100000);
 
-    ros::Publisher plane_pub = nh.advertise<visualization_msgs::Marker>("/pointlio/planner_normal", 1000);
+    ros::Publisher plane_pub = nh.advertise<visualization_msgs::Marker>("/planner_normal", 1000);
 
     signal(SIGINT, SigHandle);
 
@@ -1442,7 +1444,15 @@ int main(int argc, char **argv)
 
     if (pcl_wait_save->size() > 0 && pcd_save_en)
     {
-        string file_name = string("scans.pcd");
+        time_t rawtime;
+        struct tm* timeinfo;
+        char buffer[80];
+
+        time (&rawtime);
+        timeinfo = localtime (&rawtime);
+        strftime(buffer, 80, "scan_%m_%d_%Y_%H_%M.pcd", timeinfo);
+        // string file_name = string("scans.pcd");
+        string file_name = string(buffer);
         string all_points_dir(string(string(ROOT_DIR) + "PCD/") + file_name);
         std::cout << "Saving map to file: " << all_points_dir << std::endl;
         pcl::PCDWriter pcd_writer;
